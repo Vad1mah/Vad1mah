@@ -69,7 +69,6 @@ while running:
     pygame.display.flip()
 quit()
     
-    
 mario_img_right = [pygame.image.load('images/r1.png'), 
                    pygame.image.load('images/r2.png'), 
                    pygame.image.load('images/r3.png'), 
