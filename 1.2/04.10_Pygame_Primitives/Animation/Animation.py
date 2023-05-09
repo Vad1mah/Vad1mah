@@ -1,7 +1,6 @@
 import pygame
 pygame.init()
 
-
 W = 800 
 H = 800
 display = pygame.display.set_mode( (W, H) )
