@@ -46,6 +46,9 @@ while True:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_c:
                 change_color()
+            if event.key == pygame.K_SPACE:
+                display.fill(white)
+                
             
     keys = pygame.key.get_pressed()
     
