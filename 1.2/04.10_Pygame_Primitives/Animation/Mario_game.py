@@ -199,6 +199,9 @@ while running:
                 last_spawn_time = pygame.time.get_ticks()
                 player.respawn()
                 goombas.clear()
+            elif event.key == pygame.K_ESCAPE:
+                pygame.quit()
+                exit()
         
     clock.tick(FPS)
 
