@@ -1,5 +1,4 @@
-import pygame
-import random
+import pygame, random
 pygame.mixer.pre_init(44100, -16, 5, 4096)
 pygame.init()
 
@@ -154,8 +153,8 @@ class Player(Entity):
     def jump(self):
         self.y_speed = self.jump_speed
         
-        random_player_jump_s = random.choice(s_player_jumps)
-        channel1.play(random_player_jump_s, loops = 0)
+        self.random_player_jump_s = random.choice(s_player_jumps)
+        channel1.play(self.random_player_jump_s, loops = 0)
 
 
 class Goomba(Entity):
