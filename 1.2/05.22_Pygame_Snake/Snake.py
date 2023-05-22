@@ -1,3 +1,4 @@
+from typing import Any
 import pygame, sys, random
 from pygame.math import Vector2
 import tkinter as tk
@@ -181,8 +182,9 @@ class Snake:
             channel2.play(self.s_dying, loops = 0)
         
             
-class Meal:
+class Meal():
     def __init__(self):
+        self.pepper_removed = False
         self.red_apple = pygame.image.load('images/red_apple.png').convert_alpha()
         self.red_apple = pygame.transform.scale(self.red_apple, (cell_size, cell_size))
         self.green_apple = pygame.image.load('images/green_apple.png').convert_alpha()
@@ -202,6 +204,7 @@ class Meal:
         self.pepper = pygame.transform.scale(self.pepper, (cell_size, cell_size))
         
         self.food = [self.red_apple, self.green_apple, self.yellow_apple, self.green_pear, self.yellow_pear, self.banana, self.pepper]
+        self.food_without_pepper = [self.red_apple, self.green_apple, self.yellow_apple, self.green_pear, self.yellow_pear, self.banana]
         
         self.randomize()
         self.eating_object = random.choice(self.food)
@@ -215,13 +218,26 @@ class Meal:
         self.x = random.randint(0, cell_number - 1)
         self.y = random.randint(0, cell_number - 1)
         self.pos = Vector2(self.x, self.y)
-        self.eating_object = random.choice(self.food)
         
-    def update_food_list(self):
-        self.food = [self.red_apple, self.green_apple, self.yellow_apple, self.green_pear, self.yellow_pear, self.banana, self.pepper]
+        if self.pepper_removed == True:
+            print('Без перца!', self.pepper_removed)
+            self.eating_object = random.choice(self.food_without_pepper)
+            
+        elif self.pepper_removed == False:
+            print('C перчиком!)', self.pepper_removed)
+            self.eating_object = random.choice(self.food)
+            
+    def remove_pepper(self):
+        print('Меняю на True')
+        self.pepper_removed = True
+        pygame.time.set_timer(self.respawn_pepper, 5000)
         
     def add_pepper(self):
-        pygame.time.set_timer(self.respawn_pepper, 10000)
+        self.pepper_removed = False
+        print('Поменяли на False!')
+    
+    pepper_removed = False
+        
         
 class Main():
     def __init__(self):
@@ -248,8 +264,8 @@ class Main():
             if self.meal.eating_object == self.meal.pepper:
                 self.snake.eating_pepper = True
                 self.snake.speed_up()
-                self.meal.food.remove(self.meal.pepper)
-                self.meal.add_pepper()
+                print('Стартуем')
+                self.meal.remove_pepper()
             self.meal.randomize()
             self.snake.add_block()
             self.snake.eating_sound()
@@ -265,6 +281,7 @@ class Main():
             self.unps_mx_stp_spd_up()
             self.update_start_time()
             self.is_paused = True
+            channel3.stop()
             game_over()
             
         for block in self.snake.body[1:]:
@@ -274,18 +291,18 @@ class Main():
                 self.unps_mx_stp_spd_up()
                 self.update_start_time()
                 self.is_paused = True
+                channel3.stop()
                 game_over()
         
     def respawn(self):
-        print(self.meal.food)
+        self.snake.is_dead = False
         self.snake.body = [Vector2(9,17), Vector2(9,18), Vector2(9,19)]
         self.snake.direction = Vector2(0,-1)
-        self.meal.update_food_list()
+        self.meal.pepper_removed = False
         self.meal.randomize()
         for block in self.snake.body[:]:
             if block == self.meal.pos:
                 self.respawn()
-        self.snake.is_dead = False
         pygame.time.set_timer(SCREEN_UPDATE, 150)
         
     def draw_platforms(self):
@@ -344,8 +361,9 @@ while True:
                 main_game.update()
                 
             if event.type == meal.respawn_pepper:
+                print('Меняем')
                 pygame.time.set_timer(meal.respawn_pepper, 0)
-                meal.update_food_list()
+                meal.add_pepper()
                 
             if event.type == snake.very_fast:
                 channel3.stop()
