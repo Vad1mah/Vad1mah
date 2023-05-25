@@ -235,9 +235,7 @@ class Meal():
     def add_pepper(self):
         self.pepper_removed = False
         print('Поменяли на False!')
-    
-    pepper_removed = False
-        
+                
         
 class Main():
     def __init__(self):
@@ -346,7 +344,6 @@ pygame.time.set_timer(SCREEN_UPDATE, 150)
 
 main_game = Main()  
 snake = Snake()
-meal = Meal()
 
 while True:
     if not main_game.is_paused:
@@ -360,10 +357,10 @@ while True:
             if event.type == SCREEN_UPDATE:
                 main_game.update()
                 
-            if event.type == meal.respawn_pepper:
+            if event.type == main_game.meal.respawn_pepper:
                 print('Меняем')
-                pygame.time.set_timer(meal.respawn_pepper, 0)
-                meal.add_pepper()
+                pygame.time.set_timer(main_game.meal.respawn_pepper, 0)
+                main_game.meal.add_pepper()
                 
             if event.type == snake.very_fast:
                 channel3.stop()
