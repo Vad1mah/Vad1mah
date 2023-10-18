@@ -228,7 +228,7 @@ while True:
         elem.draw_info()
     
     screen.blit(earth_count_img, (20, 45))
-    screen.blit(font_nums.render('days: ' + str(-earth.angle), False, 'white'), (55, 50))
+    screen.blit(font_nums.render('days: ' + str(int(-earth.angle * (360/365))), False, 'white'), (55, 50))
     
     pygame.display.flip()
     clock.tick(10)
