@@ -15,19 +15,19 @@ class My_list(list):
             if isinstance(elem_1, int) or isinstance(elem_1, float) and isinstance(elem_2, int) or isinstance(elem_2, float):
                 temp_list.append(elem_1 - elem_2)
                 
-            if isinstance(elem_1, str) and isinstance(elem_2, str):
+            elif isinstance(elem_1, str) and isinstance(elem_2, str):
                 if len(elem_1) >= len(elem_2):
                     temp_list.append(elem_1)
                 else:
                     temp_list.append(elem_2)
             
-            if isinstance(elem_1, list) or isinstance(elem_1, tuple) and isinstance(elem_2, list) or isinstance(elem_2, tuple): # consists only of numbers!
+            elif isinstance(elem_1, list) or isinstance(elem_1, tuple) and isinstance(elem_2, list) or isinstance(elem_2, tuple): # consists only of numbers!
                 extra_list = []
                 for i, elem in enumerate(elem_1):
                     extra_list.append(elem_1[i] - elem_2[i])
                 temp_list.append(extra_list)
                 
-            if isinstance(elem_1, bool) and isinstance(elem_2, bool):
+            elif isinstance(elem_1, bool) and isinstance(elem_2, bool):
                 if elem_1 == 'True' and elem_2 == 'True':
                     temp_list.append(0)
                 elif elem_1 == 'True' and elem_2 == 'False':
