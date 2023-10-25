@@ -23,6 +23,11 @@ class My_list(list):
             
             elif isinstance(elem_1, list) or isinstance(elem_1, tuple) and isinstance(elem_2, list) or isinstance(elem_2, tuple): # consists only of numbers!
                 extra_list = []
+                while len(elem_1) < len(elem_2):
+                    elem_1.append(0)
+                while len(elem_2) < len(elem_1):
+                    elem_2.append(0)
+                    
                 for i, elem in enumerate(elem_1):
                     extra_list.append(elem_1[i] - elem_2[i])
                 temp_list.append(extra_list)
@@ -43,8 +48,10 @@ class My_list(list):
         return My_list(temp_list[0], temp_list[1], temp_list[2])
     
     def __truediv__(self, other):
-        if isinstance(other, int):
+        if isinstance(other, int) or isinstance(other, float):
             return My_list(self.a / other, self.b / other, self.c / other)
+        else:
+            return 'Деление невозможно'
         
     def __str__(self):
         return super().__str__() +  " Список элементов"
