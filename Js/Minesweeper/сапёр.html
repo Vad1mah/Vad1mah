@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initical-scale=1">
+    <title></title>
+    <style type="text/css">
+        * {
+            box-sizing: border-box;
+        }
+
+        .game {
+            --columns: None;
+            --bomb-count: 12;
+            display: grid;
+            grid-template-columns: repeat(var(--bomb-count), 40px);
+            grid-gap: 8px;
+            user-select: none;
+        }
+
+        .game__cell {
+            width: 40px;
+            height: 40px;
+            border: solid 1px #707070;
+            display: inline-block;
+            background: #BBBBBB;
+            font-size: 20px;
+            font-family: sans-serif;
+            cursor: pointer;
+        }
+
+        .game__cell--open {
+            background: #fff;
+            cursor: default;
+        }
+
+        .game__cell--marked {
+            background: #fff;
+        }
+
+        .game__cell--marked:before {
+            content: url("./images/flag.svg");
+        }
+
+        .game__cell--mined {
+            background: #C42828;
+        }
+
+        .game__cell--mined:before {
+            content: url("./images/bomb.svg");
+        }
+
+        button {
+            width: 375px;
+            height: 150px;
+            margin: 30px 97px;
+            background-color: #5ed175;
+            border-radius: 4px;
+            cursor: pointer;
+            user-select: none;
+            font-size: 30px;
+        }
+
+        .game__cell--lighting {
+            border: 2px solid #04BEEE80;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="game" class="game">
+    </div>
+    <button id="restartButton">Начать игру заново</button>
+    <script>
+        (function () {
+            let gameDiv;
+            let width = 12;
+            let height = 12;
+            let bombCount = 4;
+            let bombMap = [];
+            let gameStarted = false;
+            let cells = [];
+            let currentIndex = 1;
+            let currentCell = [0, 0];
+            let freeCells = width * height;
+
+            document.addEventListener('DOMContentLoaded', function () {
+                gameDiv = document.getElementById('game');
+                gameDiv.innerHTML = '';
+                gameDiv.style.setProperty('--columns', width);
+
+                for (let y = 0; y < height; y++) {
+                    cells[y] = [];
+                    for (let x = 0; x < width; x++) {
+                        let cell = document.createElement('div');
+                        cell.className = 'game__cell';
+                        cell.x = x;
+                        cell.y = y;
+                        cells[y][x] = cell;
+                        gameDiv.append(cell);
+                    }
+                }
+                lighting();
+
+                gameDiv.addEventListener('click', e => {
+                    let cell = e.target;
+                    if (!cell.matches('.game__cell')) {
+                        return;
+                    }
+
+                    if (!gameStarted) {
+                        bombMap = makeBombs(bombCount, width, height, cell.x, cell.y);
+                        gameStarted = true;
+                    }
+
+                    openCell(cell, true);
+                });
+
+                gameDiv.addEventListener('contextmenu', e => {
+                    e.preventDefault();
+                    let cell = e.target;
+                    if (!cell.matches('.game__cell')) {
+                        return;
+                    }
+                    if (cell.classList.contains('game__cell--open')) {
+                        return;
+                    }
+                    cell.classList.toggle('game__cell--marked');
+                });
+
+                window.addEventListener('keydown', e => {
+                    switch (e.code) {
+                        case 'ArrowRight':
+                            e.preventDefault();
+                            break
+                        case 'ArrowLeft':
+                            e.preventDefault();
+                            break
+                        case 'ArrowUp':
+                            e.preventDefault();
+                            break
+                        case 'ArrowDown':
+                            e.preventDefault();
+                            break
+                        case 'Space':
+                            e.preventDefault();
+                            break
+                    }
+                });
+                window.addEventListener('keyup', e => {
+                    let cell = cells[currentCell[1]][currentCell[0]];
+                    cell.classList.remove('game__cell--lighting');
+                    switch (e.code) {
+                        case 'ArrowRight':
+                            e.preventDefault();
+                            currentCell[0]++;
+                            break;
+                        case 'ArrowLeft':
+                            e.preventDefault();
+                            currentCell[0]--;
+                            break;
+                        case 'ArrowUp':
+                            e.preventDefault();
+                            currentCell[1]--;
+                            break;
+                        case 'ArrowDown':
+                            e.preventDefault();
+                            currentCell[1]++;
+                            break;
+
+                        case 'Space':
+                            if (e.ctrlKey) {
+                                cell.classList.toggle('game__cell--marked');
+                            } else {
+                                cell.click();
+                            }
+                            break
+
+                        case 'Enter':
+                            if (e.ctrlKey) {
+                                cell.classList.toggle('game__cell--marked');
+                            } else {
+                                cell.click();
+                            }
+                            break;
+                    }
+
+                    if (currentCell[0] < 0) currentCell[0] = 0;
+                    if (currentCell[1] < 0) currentCell[1] = 0;
+
+                    if (currentCell[0] >= width) currentCell[0] = width - 1;
+                    if (currentCell[1] >= height) currentCell[1] = height - 1;
+
+                    lighting();
+                });
+            });
+
+            function lighting() {
+                let cell = cells[currentCell[1]][currentCell[0]];
+                if (cell) {
+                    cell.classList.add('game__cell--lighting');
+                }
+            }
+
+            function openCell(cell, userAction) {
+                if (cell.classList.contains('game__cell--open')) {
+                    return;
+                }
+                if (userAction && cell.classList.contains('game__cell--marked')) {
+                    return;
+                }
+                if (cell.classList.contains('game__cell--mined')) {
+                    return;
+                }
+                if (bombMap[cell.y][cell.x]) {
+                    if (userAction) {
+                        cell.classList.add('game__cell--mined');
+                        gameOver();
+                    }
+
+                } else {
+                    cell.classList.add('game__cell--open');
+                    cell.classList.remove('game__cell--marked');
+                    let n = calcBombsAround(cell);
+                    if (n) {
+                        cell.textContent = n;
+                    } else {
+                        for (let y = cell.y - 1; y <= cell.y + 1; y++) {
+                            for (let x = cell.x - 1; x <= cell.x + 1; x++) {
+                                if (cells[y] && cells[y][x]) {
+                                    openCell(cells[y][x]);
+                                }
+                            }
+                        }
+                    }
+
+                }
+            }
+
+            function calcBombsAround(cell) {
+                let n = 0;
+
+                for (let y = cell.y - 1; y <= cell.y + 1; y++) {
+                    for (let x = cell.x - 1; x <= cell.x + 1; x++) {
+                        if (bombMap[y] && bombMap[y][x]) n++;
+                    }
+                }
+                return n;
+            }
+
+            function makeBombs(count, width, height, notX, notY) {
+                let bombMap = [];
+                let currentCount = 0;
+                for (let y = 0; y < height; y++) {
+                    bombMap[y] = []
+                    for (let x = 0; x < width; x++) {
+                        bombMap[y][x] = 0;
+                    }
+                }
+
+                while (currentCount < count) {
+                    let x = Math.floor(Math.random() * width);
+                    let y = Math.floor(Math.random() * height);
+                    if ((x != notX || y != notY) && !bombMap[y][x]) {
+                        bombMap[y][x] = 1;
+                        currentCount++;
+                    }
+                };
+                return bombMap;
+            }
+
+            document.addEventListener('DOMContentLoaded', function () {
+                document.getElementById('restartButton').addEventListener('click', function () {
+                    resetGame();
+                });
+            });
+
+            function gameOver() {
+                alert('Игра закончена. Вы проиграли!!!');
+                cells.forEach(row => {
+                    row.forEach(cell => {
+                        if (bombMap[cell.y][cell.x]) {
+                            cell.classList.add('game__cell--mined');
+                        }
+                    });
+                });
+            }
+
+            function checkGameWin() {
+                let isGameWin = cells.every(row => {
+                    return row.every(cell => {
+                        return (cell.classList.contains('game__cell--open') && !bombMap[cell.y][cell.x]) ||
+                            (cell.classList.contains('game__cell--marked') && bombMap[cell.y][cell.x]);
+                    });
+                });
+
+                if (isGameWin) {
+                    alert('Поздравляем!!! Вы победили.');
+                }
+            }
+            function resetGame() {
+                gameStarted = false;
+                cells.forEach(row => {
+                    row.forEach(cell => {
+                        cell.classList.remove('game__cell--open', 'game__cell--marked', 'game__cell--mined');
+                        cell.textContent = '';
+                    });
+                });
+                bombMap = [];
+            }
+        })();
+    </script>
+</body>
+
+</html>
