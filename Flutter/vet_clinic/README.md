@@ -1,4 +1,4 @@
-# dishes_app
+# vet_clinic
 
 A new Flutter project.
 
